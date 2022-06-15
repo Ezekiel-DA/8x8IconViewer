@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import useSWR from 'swr'
 import axios from 'axios'
 import AwesomeDebouncePromise from 'awesome-debounce-promise'
-import { HStack, VStack, Input, Heading, SimpleGrid } from '@chakra-ui/react'
+import { HStack, VStack, Input, Heading, SimpleGrid, Button } from '@chakra-ui/react'
 import IconViewer from '../components/IconViewer'
 
 const iconSearcher = url => axios.post(url).then(res => res.data)
@@ -46,9 +46,12 @@ export default function Home() {
       </Head>
 
       <VStack>
-        <HStack>
+        <HStack m={2}>
           <Heading size='md'>Search:</Heading>
           <Input value={searchQuery} onChange={(evt) => setsearchQuery(evt.target.value)} />
+          <Button pl={8} pr={8} onClick={() => {
+            fetch('http://iconviewer.local/icon', { method: 'DELETE' })
+          }}>Clear panel</Button>
         </HStack>
 
         <IconSearchResults searchResults={iconSearchResults} isLoading={isLoading} isError={isError} />

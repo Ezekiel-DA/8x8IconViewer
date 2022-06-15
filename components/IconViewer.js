@@ -21,8 +21,42 @@ function Icon({ iconData }) {
     }, iconData.delays[frame])
   }
 
+  async function iconClicked() {
+    if (iconData.icons.length > 1 && iconData.icons.length !== iconData.delays.length) {
+      throw new Error("Icon data is invalid: frame data and frame delay arrays are of different length. Cannot send to device.")
+    }
+
+    let bufferIdx = 0
+    let rawIcon = new Uint8Array(1 + 8*8*3*iconData.icons.length + 4*iconData.icons.length)
+    rawIcon[bufferIdx++] = iconData.icons.length
+    let iconIdx = 0
+    for (const icon of iconData.icons) {
+      const delayAs32Bit = new Uint32Array(1)
+      delayAs32Bit[0] = iconData?.delays[iconIdx++] || 0
+      const delayAs8BitArray = new Uint8Array(delayAs32Bit.buffer)
+      rawIcon.set(delayAs8BitArray, bufferIdx)
+      bufferIdx += 4
+
+      for (const row of icon) {
+        for (const pixel of row) {
+          for (const subPixel of pixel.slice(0, 3)) {
+            rawIcon[bufferIdx++] = subPixel * 255
+          }
+        }
+      }
+    }
+
+    fetch('http://iconviewer.local/icon', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/octet-stream'
+      },
+      body: rawIcon
+    })
+  }
+
   return (
-    <div>
+    <div onClick={iconClicked}>
       {[...Array(8).keys()].map(row => {
         return (
           <div key={row} className="pixel-row">
