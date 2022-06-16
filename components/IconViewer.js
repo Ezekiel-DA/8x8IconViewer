@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { Box } from '@chakra-ui/react'
 
+import { iconviewerURL } from '../config'
+
 function Pixel({ color }) {
   return (
     <div className="pixel" style={{ backgroundColor: color }}>
@@ -46,7 +48,7 @@ function Icon({ iconData }) {
       }
     }
 
-    fetch('http://iconviewer.local/icon', {
+    fetch(new URL('/icon', iconviewerURL), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/octet-stream'

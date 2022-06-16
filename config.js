@@ -1,0 +1,1 @@
+export const iconviewerURL = 'http://iconviewer.local/'
