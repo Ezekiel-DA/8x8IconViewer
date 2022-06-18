@@ -88,6 +88,19 @@ export async function getIconsDB() {
 }
 
 export function getIcons(dbRefs) {
+
+  // let i = 0
+  // let result = []
+  // for (let ref in dbRefs) {
+  //   i++
+  //   console.log(dbRefs[ref])
+  //   result.push(JSON.parse(fs.readFileSync(path.join('data', dbRefs[ref].file))))
+  //   if(i === 20) {
+  //     return result
+  //   }
+  // }
+
+
   return dbRefs.map(iconRef => JSON.parse(fs.readFileSync(path.join('data', iconRef.file))))
 }
 

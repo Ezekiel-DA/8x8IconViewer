@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Box } from '@chakra-ui/react'
+import Badge from 'react-bootstrap/Badge';
 
 import { iconviewerURL } from '../config'
 
@@ -80,10 +81,8 @@ export default function IconViewer({ iconData }) {
           <Icon iconData={iconData.body} />
         </div>
         <div className="icon-info">
-          <h1><div>{iconData.name}</div></h1>
-          <div>iconID: {iconData.id}</div>
-          <div>category: {iconData.category_name}</div>
-          {/* <div>animated: {iconData.isAnimation ? 'yes' : 'no'}</div> */}
+          <div><span className='icon-name'>{iconData.name}</span> | {iconData.id}</div>
+          <Badge pill bg="primary">{iconData.category_name}</Badge>
         </div>
       </div>
     </Box>
