@@ -1,9 +1,9 @@
 import { getIconsDB } from '../../src/db'
 
 export default async function handler(req, res) {
-  const icons = await getIconsDB()
-  
   if (req.method === 'POST') {
+    const icons = await getIconsDB()
+    
     const { name } = req.query
 
     if (name.length < 3) {
