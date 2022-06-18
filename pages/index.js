@@ -40,8 +40,11 @@ function IconSearchResults({ searchResults, isLoading, isError }) {
   
   if (isError)
     return <Error />
-  else if (isLoading || !searchResults)
+  else if (isLoading)
     return <Loading />
+  else if (!searchResults)
+    return <></>
+
 
   return (
     <Masonry
