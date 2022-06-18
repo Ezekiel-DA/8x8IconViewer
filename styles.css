@@ -92,6 +92,16 @@ html, body {
   justify-content: space-between;
 }
 
+.icon-info > div:nth-of-type(1)  {
+  display: flex;
+}
+
 .icon-name {
  font-weight: 900;
-}
+ max-width: 240px;
+ white-space: nowrap;
+ overflow: hidden;
+ text-overflow: ellipsis;
+ display: block;
+ margin-right: 8px;
+} 
