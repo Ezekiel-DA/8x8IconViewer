@@ -1,126 +1,154 @@
 import Head from 'next/head'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import useSWR from 'swr'
 import axios from 'axios'
 import AwesomeDebouncePromise from 'awesome-debounce-promise'
-import { HStack, VStack, Input, Heading, SimpleGrid, Button, Select } from '@chakra-ui/react'
-import { Slider, SliderTrack, SliderFilledTrack, SliderThumb, SliderMark, } from '@chakra-ui/react'
+import {Input, SimpleGrid, Button } from '@chakra-ui/react'
 import IconViewer from '../components/IconViewer'
-import { iconviewerURL } from '../config'
+import ReactLoading from 'react-loading'
+import Select from 'react-select'
+import List from 'react-virtualized/dist/commonjs/List';
+import useSWRImmutable from 'swr/immutable'
+
+import { MdOutlineClear, MdErrorOutline } from 'react-icons/md';
 
 const iconSearcher = url => axios.post(url).then(res => res.data)
-const debouncedIconSearcher = AwesomeDebouncePromise(iconSearcher, 1000)
+const categoriesSearcher = url => axios.get(url).then(res => res.data.split(','))
+const debouncedIconSearcher = AwesomeDebouncePromise( iconSearcher, 1000)
 
-function useIconSearch(name) {
-  const { data, error } = useSWR(`/api/search?name=${name}`, debouncedIconSearcher)
-
-  return {
-    iconSearchResults: data,
-    isLoading: !error && !data,
-    isError: error
-  }
+function useIconSearch(query) {
+    const { data, error } = useSWRImmutable(query && query.value ? `/api/search?${query.param}=${query.value}` : undefined, debouncedIconSearcher)
+    return {
+      icons: data,
+      isLoading: !error && !data && query.value,
+      isError: error
+    }
 }
 
-function iconViewerPutter(endpoint, val) {
-  fetch(new URL(endpoint, iconviewerURL), { method: 'PUT', headers: { 'Content-Type': 'text/plain' }, body: val })
+function useCategories() {
+  const { data, error } = useSWRImmutable(`/api/categories`, categoriesSearcher)
+  return {
+    categories: data,
+    isCategoriesLoading: !error && !data,
+    isCategoriesError: error
+  }
 }
 
 function IconSearchResults({ searchResults, isLoading, isError }) {
-  if (isLoading) {
-    return (
-      <div>
-        Loading...
-      </div>
-    )
-  }
+  
+  if (isError)
+    return <Error />
+  else if (isLoading)
+    return <Loading />
+
+  // return (
+  // <List
+  //   width={600}
+  //   height={600}
+  //   rowHeight={20}
+  //   rowCount={searchResults.length}
+  //   rowRenderer={({ key, index, style }) => {
+  //     return (
+  //       <IconViewer key={key} iconData={searchResults[index]} />
+  //     );
+  //   }} />
+  // )
   return (
-    <SimpleGrid columns={{ sm: 1, md: 4 }} spacing={5}>
-      {searchResults.map(iconData => <IconViewer key={iconData.id} iconData={iconData} />)}
+    <SimpleGrid columns={{sm: 1, md: 4}} spacing={5}>
+      {searchResults?.map(iconData => <IconViewer key={iconData.id} iconData={iconData} />)}
     </SimpleGrid>
   )
 }
 
-function DropdownBuilder({ options, handler }) {
-  async function handleSelection(evt) {
-    const val = evt.target.options[evt.target.selectedIndex].value
-    handler(val)
-  }
-
-  return (
-    <Select onChange={handleSelection}>
-      {options.map((t, idx) => (
-        <option value={idx} key={idx}>{t}</option>
-      ))}
-    </Select>
-  )
+const Loading = () => {
+  return <ReactLoading type={"spinningBubbles"} color={"#EDF2F7"} height={80} width={80} />
 }
 
-function TemperatureDropdown() {
-  const temperatureOptions = [
-    'UncorrectedTemperature',
-    'Candle', 'Tungsten40W', 'Tungsten100W', 'Halogen', 'CarbonArc', 'HighNoonSun', 'DirectSunlight', 'OvercastSky', 'ClearBlueSky',
-    'WarmFluorescent', 'StandardFluorescent', 'CoolWhiteFluorescent', 'FullSpectrumFluorescent', 'GrowLightFluorescent', 'BlackLightFluorescent', 'MercuryVapor', 'SodiumVapor', 'MetalHalide', 'HighPressureSodium'
-  ]
-
-  return (
-    <DropdownBuilder options={temperatureOptions} handler={val => iconViewerPutter('/temperature', val)} />
-  )
+const Error = () => {
+  return<MdErrorOutline id='error'/>
 }
 
-function CorrectionDropdown() {
-  const correctionOptions = [
-    'UncorrectedColor',
-    'TypicalSMD5050', 'TypicalLEDStrip', 'Typical8mmPixel', 'TypicalPixelString'
-  ]
-
-  return (
-    <DropdownBuilder options={correctionOptions} handler={val => iconViewerPutter('/correction', val)} />
-  )
+const Categories = ({values, onSelect, isLoading}) => {
+  console.log('category')
+  return <Select 
+    className='categories'
+    isDisabled={isLoading}
+    options={values.map(v => { return { value: v, label: v }})}
+    onChange={onSelect}
+    // onInputChange={onSelect}
+    />
 }
 
-function BrightnessSlider() {
-  const [value, setValue] = useState(255)
-
-  useEffect(() => {
-    iconViewerPutter('/brightness', value)
-  })
-
+const Search = ({categories, isLoading, searchQuery, onClearSearch, onNameSearch, onCategorySelection }) => {
   return (
-    <Slider value={value} min={1} max={255} onChange={val => setValue(val)}>
-  <SliderTrack>
-    <SliderFilledTrack />
-  </SliderTrack>
-  <SliderThumb />
-</Slider>
+  <div className='header'>
+    <Categories
+      values={categories} 
+      onSelect={(e) => onCategorySelection(e.value)}
+      isLoading={isLoading}
+      />
+    <div className='search'>
+      <Input
+        isDisabled={isLoading}
+        className = "searchField"
+        value={searchQuery.param === 'name'? searchQuery.value : ''}
+        onChange={evt => onNameSearch(evt.target.value)} />
+      <Button 
+        className = "clearSearch"
+        isDisabled={isLoading}
+        onClick={onClearSearch}>
+          <MdOutlineClear/>
+      </Button>
+    </div>
+  </div>
   )
 }
 
 export default function Home() {
-  const [searchQuery, setsearchQuery] = useState('')
+  const [searchQuery, setsearchQuery] = useState({value: '', param:  'name'})
 
-  const { iconSearchResults, isLoading, isError } = useIconSearch(searchQuery)
+  const { icons, isLoading, isError } = useIconSearch(searchQuery)
+  const { categories, isCategoriesLoading, isCategoriesError } = useCategories()
+
+  const handleClearSearch = () => {
+    setsearchQuery({value: '', param: 'name'})
+    fetch('http://iconviewer.local/icon', { method: 'DELETE' })
+  }
+
+  const handleNameSearch = (search) => {
+    setsearchQuery({value: search, param:  'name'}) 
+  }
+
+  const handleCategorySelection = (selection) => { 
+    if(searchQuery.value !== selection) {
+      setsearchQuery({value: selection, param:  'category'})
+    }
+  }
 
   return (
     <div className="container">
       <Head>
         <title>8x8 Icon Viewer</title>
       </Head>
-
-      <VStack>
-        <HStack m={2}>
-          <Heading size='md'>Search:</Heading>
-          <Input value={searchQuery} onChange={(evt) => setsearchQuery(evt.target.value)} />
-          <Button pl={8} pr={8} onClick={() => {
-            fetch(new URL('/icon', iconviewerURL), { method: 'DELETE' })
-          }}>Clear panel</Button>
-          <TemperatureDropdown />
-          <CorrectionDropdown />
-          <BrightnessSlider />
-        </HStack>
-
-        <IconSearchResults searchResults={iconSearchResults} isLoading={isLoading} isError={isError} />
-      </VStack>
+      {
+        isCategoriesLoading
+          ? <Loading />
+          : isCategoriesError 
+          ? <Error />
+          : <>
+            <Search
+              searchQuery={searchQuery}
+              categories={categories} 
+              onClearSearch={handleClearSearch} 
+              onNameSearch={handleNameSearch} 
+              onCategorySelection={handleCategorySelection}
+              isLoading={isLoading}/>
+            <IconSearchResults 
+              searchResults={icons} 
+              isLoading={isLoading} 
+              isError={isError} />
+         </>
+      }
     </div>
-
   )
 }

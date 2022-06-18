@@ -58,7 +58,9 @@ function Icon({ iconData }) {
   }
 
   return (
-    <div onClick={iconClicked}>
+    <div 
+      // onClick={iconClicked}
+      >
       {[...Array(8).keys()].map(row => {
         return (
           <div key={row} className="pixel-row">

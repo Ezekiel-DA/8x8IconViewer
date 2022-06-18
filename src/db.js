@@ -2,12 +2,17 @@ import { readFile, readdir } from 'fs/promises'
 import path from 'path'
 import Loki from 'lokijs'
 import lfsa from 'lokijs/src/loki-fs-structured-adapter'
+import fs from 'fs'
+
+const CATEGORIES_FILENAME = 'categories'
+const ICONS_FILENAME = 'icons.db'
 
 const adapter = new lfsa()
 
-const db = new Loki('icons.db', { adapter })
+const db = new Loki(ICONS_FILENAME, { adapter })
 
 let iconsDB
+let categories
 
 function* chunkFileList(ls, chunkSize = 5000) {
   for (let idx = 0; idx < ls.length; idx += chunkSize) {
@@ -16,16 +21,33 @@ function* chunkFileList(ls, chunkSize = 5000) {
 }
 
 async function createDBFromFiles() {
-  const basename = path.join('..', 'LED_matrix_icons', 'data')
+
+  const basename = path.join('data')
   const icons = db.addCollection('icons')
 
+  if (fs.existsSync(CATEGORIES_FILENAME)) {
+    fs.unlink(CATEGORIES_FILENAME, (err) => {
+      if (err)
+        return console.error(err)
+    })
+  }
+
+  const categoriesSet = new Set()
   const chunkedFilelist = [...chunkFileList(await readdir(basename))]
   for (const chunk of chunkedFilelist) {
     for (const filename of chunk) {
       const fileContents = await readFile(path.join(basename, filename))
-      icons.insert(JSON.parse(fileContents))
+      const json = JSON.parse(fileContents)
+      icons.insert({ name: json.name, category_name: json.category_name, file: filename})
+      categoriesSet.add(json.category_name ? json.category_name : 'Undefined')
     }
   }
+
+  fs.appendFile(CATEGORIES_FILENAME,  Array.from(categoriesSet).toString(), err => {
+    if (err) {
+      return console.error(err);
+    }
+  });
 }
 
 export async function getIconsDB() {
@@ -63,4 +85,19 @@ export async function getIconsDB() {
   }
 
   return iconsDB
+}
+
+export function getIcons(dbRefs) {
+  return dbRefs.map(iconRef => JSON.parse(fs.readFileSync(path.join('data', iconRef.file))))
+}
+
+export async function getCategories() {
+  if (!categories) {
+    await fs.readFile(CATEGORIES_FILENAME, (err, data) => {
+      if (err)
+        return console.error(err)
+      categories = data
+    })
+  }
+  return categories
 }

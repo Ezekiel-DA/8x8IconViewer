@@ -21,3 +21,54 @@
   text-align: center;
   width: 40px;
 }
+
+html, body {
+  min-height: 100%;
+  min-width: 100%;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  /* position: sticky; */
+  top: 0;
+  width: 100%;
+  /* background-color: red; */
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.container {
+  /* height:100vh; */
+  display:  flex;
+  flex-direction:  column;
+  align-items: center;
+  justify-content: center;
+}
+
+.categories {
+  width: 360px;
+  min-height: 48px;
+}
+
+.search {
+  display: flex;
+  justify-content: center;
+  width: 360px;
+  min-height: 48px;
+}
+
+.clearSearch {
+  border-radius: 0px 8px 8px 0px !important;
+}
+
+.searchField {
+  border-radius: 8px 0px 0px 8px !important;
+  background-color: white !important;
+}
+
+#error {
+  font-size: 76px;
+  color: red;
+}
