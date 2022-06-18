@@ -91,13 +91,9 @@ export function getIcons(dbRefs) {
   return dbRefs.map(iconRef => JSON.parse(fs.readFileSync(path.join('data', iconRef.file))))
 }
 
-export async function getCategories() {
+export function getCategories() {
   if (!categories) {
-    await fs.readFile(CATEGORIES_FILENAME, (err, data) => {
-      if (err)
-        return console.error(err)
-      categories = data
-    })
+    categories = fs.readFileSync(CATEGORIES_FILENAME)
   }
   return categories
 }
