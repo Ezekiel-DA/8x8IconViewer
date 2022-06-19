@@ -31,4 +31,7 @@ yarn-error.log*
 
 .vscode
 
+./next
+/data
+
 icons.*

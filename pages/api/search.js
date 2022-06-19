@@ -1,17 +1,26 @@
-import { getIconsDB } from '../../src/db'
+import { getIconsDB, getIcons } from '../../src/db'
 
+
+// API calls:
+// /api/search?param=category&value=emoji
+// /api/search?param=name&value=sun
 export default async function handler(req, res) {
+  const icons = await getIconsDB()
+  
   if (req.method === 'POST') {
-    const icons = await getIconsDB()
-    
-    const { name } = req.query
-
-    if (name.length < 3) {
-      return res.status(200).json([])
+    const { param, value } = req.query
+    let iconRefs
+    if(param === 'name') {
+      if(value?.length < 3)
+        return res.status(200).json([])
+      iconRefs = icons.find({ name: { '$regex': new RegExp(value, 'i') } })
+    } else if (param === 'category') {
+      iconRefs = icons.find({ category_name: value })
+    } else {
+      return res.status(400).json([])
     }
-
-    const foundIcons = icons.find({ name: { '$regex': new RegExp(name, 'i') } })
-    return res.status(200).json(foundIcons)
+    const foundIcons = await getIcons(iconRefs)
+    return  res.status(200).json(foundIcons)
   } else {
     return res.status(405).json({ error: 'method not supported, please use POST' })
   }

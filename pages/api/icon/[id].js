@@ -1,12 +1,13 @@
 import { readFile } from 'fs/promises'
-import path from 'path'
+
+import { iconsFilePath } from '../config'
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     const { id } = req.query
     let iconData
     try {
-      iconData = await readFile(path.join('..', 'LED_matrix_icons', 'data', `${id}.json`))
+      iconData = await readFile(path.join(iconsFilePath, `${id}.json`))
       res.status(200).json(iconData)
     } catch (err) {
       if (err.code === 'ENOENT') {
