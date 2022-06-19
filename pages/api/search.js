@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     } else {
       return res.status(400).json([])
     }
-    const foundIcons = getIcons(iconRefs)
+    const foundIcons = await getIcons(iconRefs)
     return  res.status(200).json(foundIcons)
   } else {
     return res.status(405).json({ error: 'method not supported, please use POST' })

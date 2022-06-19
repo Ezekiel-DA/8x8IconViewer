@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { Box } from '@chakra-ui/react'
-import { Badge } from '@chakra-ui/react'
-import { iconviewerURL } from '../config'
+import { Box, Badge } from '@chakra-ui/react'
+
+import { iconviewerURL, sendToIconViewerDevice } from '../config'
 
 function Pixel({ color }) {
   return (
@@ -24,12 +24,16 @@ function Icon({ iconData }) {
   }
 
   async function iconClicked() {
+    if (!sendToIconViewerDevice) {
+      return
+    }
+
     if (iconData.icons.length > 1 && iconData.icons.length !== iconData.delays.length) {
       throw new Error("Icon data is invalid: frame data and frame delay arrays are of different length. Cannot send to device.")
     }
 
     let bufferIdx = 0
-    let rawIcon = new Uint8Array(1 + 8*8*3*iconData.icons.length + 4*iconData.icons.length)
+    let rawIcon = new Uint8Array(1 + 8 * 8 * 3 * iconData.icons.length + 4 * iconData.icons.length)
     rawIcon[bufferIdx++] = iconData.icons.length
     let iconIdx = 0
     for (const icon of iconData.icons) {
@@ -58,9 +62,7 @@ function Icon({ iconData }) {
   }
 
   return (
-    <div 
-      // onClick={iconClicked}
-      >
+    <div onClick={iconClicked}>
       {[...Array(8).keys()].map(row => {
         return (
           <div key={row} className="pixel-row">
