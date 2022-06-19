@@ -19,7 +19,7 @@ export default function Search({ children, categories, isLoading, searchQuery, o
           />
           <Input
             variant="filled"
-            isDisabled={isLoading}
+            // isDisabled={isLoading}
             className="searchField"
             value={searchQuery.param === 'name' ? searchQuery.value : ''}
             onChange={evt => onNameSearch(evt.target.value)}

@@ -7,7 +7,9 @@ const categoriesSearcher = url => axios.get(url).then(res => res.data.split(',')
 const debouncedIconSearcher = AwesomeDebouncePromise(iconSearcher, 1000)
 
 export function useIconSearch(query) {
-  const { data, error } = useSWRImmutable(query && query.value ? `/api/search?${query.param}=${query.value}` : undefined, debouncedIconSearcher)
+  const params = new URLSearchParams(query)
+
+  const { data, error } = useSWRImmutable(query && query.value ? `/api/search?${params.toString()}` : undefined, debouncedIconSearcher)
   return {
     icons: data,
     isLoading: !error && !data && query.value,

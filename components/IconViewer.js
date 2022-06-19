@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Box, Badge } from '@chakra-ui/react'
+import { Box, Tag, Tooltip } from '@chakra-ui/react'
 
 import { iconviewerURL, sendToIconViewerDevice } from '../config'
 
@@ -82,8 +82,8 @@ export default function IconViewer({ iconData }) {
           <Icon iconData={iconData.body} />
         </div>
         <div className="icon-info">
-          <div><span className='icon-name'>{iconData.name}</span> | {iconData.id}</div>
-          <Badge colorScheme='blue'>{iconData.category_name}</Badge>
+          <div><span className='icon-name'><Tooltip label={iconData.id}>{iconData.name}</Tooltip></span></div>
+          <Tag colorScheme='blue'>{iconData.category_name}</Tag>
         </div>
       </div>
     </Box>
