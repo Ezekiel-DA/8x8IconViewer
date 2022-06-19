@@ -45,6 +45,7 @@ function IconSearchResults({ searchResults, isLoading, isError }) {
 
   return (
     <Masonry
+      className='icons'
       items={searchResults}
       columnGutter={12}
       columnWidth={40 * 8}
