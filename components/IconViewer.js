@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { Box } from '@chakra-ui/react'
-import Badge from 'react-bootstrap/Badge';
-
+import { Badge } from '@chakra-ui/react'
 import { iconviewerURL } from '../config'
 
 function Pixel({ color }) {
@@ -82,7 +81,7 @@ export default function IconViewer({ iconData }) {
         </div>
         <div className="icon-info">
           <div><span className='icon-name'>{iconData.name}</span> | {iconData.id}</div>
-          <Badge pill bg="primary">{iconData.category_name}</Badge>
+          <Badge colorScheme='blue'>{iconData.category_name}</Badge>
         </div>
       </div>
     </Box>

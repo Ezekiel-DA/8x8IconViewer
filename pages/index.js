@@ -1,18 +1,16 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
-
 import Head from 'next/head'
 import React, { useState } from 'react'
-import useSWR from 'swr'
+
+import useSWRImmutable from 'swr/immutable'
 import axios from 'axios'
 import AwesomeDebouncePromise from 'awesome-debounce-promise'
-import {Input, Button } from '@chakra-ui/react'
-import IconViewer from '../components/IconViewer'
-import ReactLoading from 'react-loading'
-import Select from 'react-select'
-import useSWRImmutable from 'swr/immutable'
-import { Masonry } from "masonic";
 
-import { MdOutlineClear, MdErrorOutline } from 'react-icons/md';
+import { Masonry } from "masonic";
+import {Input, InputGroup, InputLeftElement, IconButton, CircularProgress, Select   } from '@chakra-ui/react'
+import { SmallCloseIcon, InfoOutlineIcon, SearchIcon } from '@chakra-ui/icons'
+import IconViewer from '../components/IconViewer'
+
+import { MdOutlineCategory } from 'react-icons/md';
 
 const iconSearcher = url => axios.post(url).then(res => res.data)
 const categoriesSearcher = url => axios.get(url).then(res => res.data.split(','))
@@ -45,7 +43,6 @@ function IconSearchResults({ searchResults, isLoading, isError }) {
   else if (!searchResults)
     return <></>
 
-
   return (
     <Masonry
       items={searchResults}
@@ -58,21 +55,26 @@ function IconSearchResults({ searchResults, isLoading, isError }) {
 }
 
 const Loading = () => {
-  return <ReactLoading type={"spinningBubbles"} color={"#EDF2F7"} height={80} width={80} />
+  return <CircularProgress isIndeterminate  id='state-loading' />
 }
 
 const Error = () => {
-  return<MdErrorOutline id='error'/>
+  return <InfoOutlineIcon id='state-error'/>
 }
 
 const Categories = ({values, onSelect, isLoading}) => {
+  let options = [<option key={''} value={''}/>, ...values.map(category => <option key={category} value={category}>{category}</option>)]
   return (
-    <Select 
-      className='categories'
-      isDisabled={isLoading}
-      options={values.map(v => { return { value: v, label: v }})}
-      onChange={onSelect}
-      />
+    <div className='categories'>
+      <Select 
+        icon = {<MdOutlineCategory color='gray.600'/>}
+        iconColor = { 'gray.600'}
+        variant='filled'
+        onChange={e => onSelect(e.target.value)}
+        disabled={isLoading}>
+        { options }
+      </Select>
+    </div>
   )
 }
 
@@ -81,21 +83,30 @@ const Search = ({categories, isLoading, searchQuery, onClearSearch, onNameSearch
   <div className='header'>
     <Categories
       values={categories} 
-      onSelect={(e) => onCategorySelection(e.value)}
+      onSelect={onCategorySelection}
       isLoading={isLoading}
       />
     <div className='search'>
-      <Input
-        isDisabled={isLoading}
-        className = "searchField"
-        value={searchQuery.param === 'name'? searchQuery.value : ''}
-        onChange={evt => onNameSearch(evt.target.value)} />
-      <Button 
-        className = "clearSearch"
-        isDisabled={isLoading}
-        onClick={onClearSearch}>
-          <MdOutlineClear/>
-      </Button>
+      <InputGroup>
+        <InputLeftElement
+          pointerEvents='none'
+          children={<SearchIcon color='gray.600' />}
+        />
+        <Input
+          variant="filled"
+          isDisabled={isLoading}
+          className = "searchField"
+          value={searchQuery.param === 'name'? searchQuery.value : ''}
+          onChange={evt => onNameSearch(evt.target.value)} 
+        />
+          <IconButton
+            isDisabled={isLoading}
+            className = "clear-searchField"
+            variant='unstyled'
+            onClick={onClearSearch}
+            icon={<SmallCloseIcon color='gray.300'/>}
+          />
+        </InputGroup>
     </div>
   </div>
   )
@@ -118,7 +129,7 @@ export default function Home() {
 
   const handleCategorySelection = (selection) => { 
     if(searchQuery.value !== selection) {
-      setsearchQuery({value: selection, param:  'category'})
+      setsearchQuery({value: selection, param: 'category'})
     }
   }
 
