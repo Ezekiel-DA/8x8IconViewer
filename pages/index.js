@@ -1,41 +1,17 @@
 import Head from 'next/head'
 import React, { useState } from 'react'
 
-import useSWRImmutable from 'swr/immutable'
-import axios from 'axios'
-import AwesomeDebouncePromise from 'awesome-debounce-promise'
+import { Masonry } from 'masonic'
+import { CircularProgress, Flex } from '@chakra-ui/react'
+import { InfoOutlineIcon } from '@chakra-ui/icons'
 
-import { Masonry } from "masonic";
-import {Input, InputGroup, InputLeftElement, IconButton, CircularProgress, Select   } from '@chakra-ui/react'
-import { SmallCloseIcon, InfoOutlineIcon, SearchIcon } from '@chakra-ui/icons'
+import { iconviewerURL, sendToIconViewerDevice } from '../config'
+import { useIconSearch, useCategories } from '../src/useSearch'
 import IconViewer from '../components/IconViewer'
-
-import { MdOutlineCategory } from 'react-icons/md';
-
-const iconSearcher = url => axios.post(url).then(res => res.data)
-const categoriesSearcher = url => axios.get(url).then(res => res.data.split(','))
-const debouncedIconSearcher = AwesomeDebouncePromise( iconSearcher, 1000)
-
-function useIconSearch(query) {
-    const { data, error } = useSWRImmutable(query && query.value ? `/api/search?${query.param}=${query.value}` : undefined, debouncedIconSearcher)
-    return {
-      icons: data,
-      isLoading: !error && !data && query.value,
-      isError: error
-    }
-}
-
-function useCategories() {
-  const { data, error } = useSWRImmutable(`/api/categories`, categoriesSearcher)
-  return {
-    categories: data,
-    isCategoriesLoading: !error && !data,
-    isCategoriesError: error
-  }
-}
+import Search from '../components/Search'
+import { TemperatureDropdown, CorrectionDropdown, BrightnessSlider, ClearLEDPanelButton } from '../components/ESPMatrixConfigurator'
 
 function IconSearchResults({ searchResults, isLoading, isError }) {
-  
   if (isError)
     return <Error />
   else if (isLoading)
@@ -51,86 +27,41 @@ function IconSearchResults({ searchResults, isLoading, isError }) {
       columnWidth={40 * 8}
       overscanBy={2}
       render={(e) => <IconViewer iconData={e.data} />}
-      />
+    />
   )
 }
 
 const Loading = () => {
-  return <CircularProgress isIndeterminate  id='state-loading' />
+  return <CircularProgress isIndeterminate id='state-loading' />
 }
 
 const Error = () => {
-  return <InfoOutlineIcon id='state-error'/>
-}
-
-const Categories = ({values, onSelect, isLoading}) => {
-  let options = [<option key={''} value={''}/>, ...values.map(category => <option key={category} value={category}>{category}</option>)]
-  return (
-    <div className='categories'>
-      <Select 
-        icon = {<MdOutlineCategory color='gray.600'/>}
-        iconColor = { 'gray.600'}
-        variant='filled'
-        onChange={e => onSelect(e.target.value)}
-        disabled={isLoading}>
-        { options }
-      </Select>
-    </div>
-  )
-}
-
-const Search = ({categories, isLoading, searchQuery, onClearSearch, onNameSearch, onCategorySelection }) => {
-  return (
-  <div className='header'>
-    <Categories
-      values={categories} 
-      onSelect={onCategorySelection}
-      isLoading={isLoading}
-      />
-    <div className='search'>
-      <InputGroup>
-        <InputLeftElement
-          pointerEvents='none'
-          children={<SearchIcon color='gray.600' />}
-        />
-        <Input
-          variant="filled"
-          isDisabled={isLoading}
-          className = "searchField"
-          value={searchQuery.param === 'name'? searchQuery.value : ''}
-          onChange={evt => onNameSearch(evt.target.value)} 
-        />
-          <IconButton
-            isDisabled={isLoading}
-            className = "clear-searchField"
-            variant='unstyled'
-            onClick={onClearSearch}
-            icon={<SmallCloseIcon color='gray.300'/>}
-          />
-        </InputGroup>
-    </div>
-  </div>
-  )
+  return <InfoOutlineIcon id='state-error' />
 }
 
 export default function Home() {
-  const [searchQuery, setsearchQuery] = useState({value: '', param:  'name'})
+  const [searchQuery, setsearchQuery] = useState({ value: '', param: 'name' })
+  const [colorTemp, setColorTemp] = useState(0)
+  const [colorCorrection, setColorCorrection] = useState(0)
+  const [brightness, setBrightness] = useState(25)
 
   const { icons, isLoading, isError } = useIconSearch(searchQuery)
   const { categories, isCategoriesLoading, isCategoriesError } = useCategories()
 
   const handleClearSearch = () => {
-    setsearchQuery({value: '', param: 'name'})
-    fetch('http://iconviewer.local/icon', { method: 'DELETE' })
+    setsearchQuery({ value: '', param: 'name' })
+    if (sendToIconViewerDevice) {
+      fetch(new URL('/icon', iconviewerURL), { method: 'DELETE' })
+    }
   }
 
   const handleNameSearch = (search) => {
-    setsearchQuery({value: search, param:  'name'}) 
+    setsearchQuery({ value: search, param: 'name' })
   }
 
-  const handleCategorySelection = (selection) => { 
-    if(searchQuery.value !== selection) {
-      setsearchQuery({value: selection, param: 'category'})
+  const handleCategorySelection = (selection) => {
+    if (searchQuery.value !== selection) {
+      setsearchQuery({ value: selection, param: 'category' })
     }
   }
 
@@ -142,21 +73,28 @@ export default function Home() {
       {
         isCategoriesLoading
           ? <Loading />
-          : isCategoriesError 
-          ? <Error />
-          : <>
-            <Search
-              searchQuery={searchQuery}
-              categories={categories} 
-              onClearSearch={handleClearSearch} 
-              onNameSearch={handleNameSearch} 
-              onCategorySelection={handleCategorySelection}
-              isLoading={isLoading}/>
-            <IconSearchResults 
-              searchResults={icons} 
-              isLoading={isLoading} 
-              isError={isError} />
-         </>
+          : isCategoriesError
+            ? <Error />
+            : <>
+              <Search
+                searchQuery={searchQuery}
+                categories={categories}
+                onClearSearch={handleClearSearch}
+                onNameSearch={handleNameSearch}
+                onCategorySelection={handleCategorySelection}
+                isLoading={isLoading}>
+                <Flex minWidth='80%' alignItems='center' gap={2}>
+                  <ClearLEDPanelButton />
+                  <TemperatureDropdown colorTemp={colorTemp} setColorTemp={setColorTemp} />
+                  <CorrectionDropdown colorCorrection={colorCorrection} setColorCorrection={setColorCorrection} />
+                  <BrightnessSlider brightness={brightness} setBrightness={setBrightness} />
+                </Flex>
+              </Search>
+              <IconSearchResults
+                searchResults={icons}
+                isLoading={isLoading}
+                isError={isError} />
+            </>
       }
     </div>
   )
