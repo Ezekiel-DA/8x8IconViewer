@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 
 import Select from "react-select";
-import { Grid, Box, Button, Center } from "@chakra-ui/react";
+import { Grid, Box, IconButton, Center } from "@chakra-ui/react";
+import { MdOutlineAutoDelete } from "react-icons/md";
 
 import IconViewer from "../IconViewer";
-
 import Cron from "./Cron";
 
 export default function ScheduledTask({
@@ -15,6 +15,7 @@ export default function ScheduledTask({
   onCronChange,
   icon,
   onIconChange,
+  isDeleteDisabled
 }) {
   let options = icons.map(icon => {
     return { value: icon, label: icon.name };
@@ -33,7 +34,7 @@ export default function ScheduledTask({
         />
         <Grid gridTemplateColumns={"1fr min-content"}>
           <span />
-          <Button onClick={() => onRemove(index)}>Remove</Button>{" "}
+          <IconButton isDisabled={isDeleteDisabled} isRound={true} variant='outline' icon={<MdOutlineAutoDelete/>} onClick={() => onRemove(index)}/>
         </Grid>
         <Center>{icon ? <IconViewer iconData={icon} displayInfo = {false}/> : <></>}</Center>
         <Grid gridTemplateRows={"min-content 1fr"}>

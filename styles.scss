@@ -114,3 +114,11 @@
     background-color: white !important;
   }
 }
+
+.scheduler-menu {
+  position: fixed !important;
+  top: 24px;
+  right: 24px;
+  z-index: 1;
+  margin-right: 1.5vw;
+}

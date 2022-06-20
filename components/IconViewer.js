@@ -91,9 +91,7 @@ export default function IconViewer({ iconData, displayInfo = true }) {
   return (
     <Box>
       <div className="icon-viewer">
-        <div className="icon">
-          <Icon iconData={iconData.body} />
-        </div>
+        <Icon iconData={iconData.body} />
         {displayInfo ? (
           <div className="icon-info">
             <div>
