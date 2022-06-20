@@ -1,6 +1,7 @@
 import { Input, InputGroup, InputLeftElement, IconButton } from '@chakra-ui/react'
 import { SmallCloseIcon, SearchIcon } from '@chakra-ui/icons'
 
+
 import Categories from './categories'
 
 export default function Search({ children, categories, isLoading, searchQuery, onClearSearch, onNameSearch, onCategorySelection }) {

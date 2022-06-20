@@ -1,6 +1,6 @@
 import path from 'path'
 
-export const sendToIconViewerDevice = true
+export const sendToIconViewerDevice = false
 export const iconviewerURL = 'http://iconviewer.local/'
 
 export const iconsFilePath = path.join('..', 'LED_matrix_icons', 'data')
