@@ -95,7 +95,7 @@ export async function getIcons(dbRefs) {
 export async function getCategories() {
   if (!categories) {
     try {
-      categories = await readFile(CATEGORIES_FILENAME)
+      categories = await readFile(CATEGORIES_FILENAME, {encoding: 'utf8'})
     } catch (err) {
       if (err.code === 'ENOENT') {
         await initDB() // TODO: is it worth it to make creation of the categories file not a side effect of initDB()?

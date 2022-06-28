@@ -2,17 +2,25 @@ import Head from 'next/head'
 import React, { useState } from 'react'
 
 import { Masonry } from 'masonic'
-import { CircularProgress, Flex } from '@chakra-ui/react'
-import { InfoOutlineIcon } from '@chakra-ui/icons'
+import { CircularProgress, Flex, IconButton } from '@chakra-ui/react'
+import { InfoOutlineIcon, CalendarIcon } from '@chakra-ui/icons'
 
 import { iconviewerURL, sendToIconViewerDevice } from '../config'
 import { useIconSearch, useCategories } from '../src/useSearch'
 import IconViewer from '../components/IconViewer'
 import Search from '../components/Search'
 import { TemperatureDropdown, CorrectionDropdown, BrightnessSlider, ClearLEDPanelButton } from '../components/ESPMatrixConfigurator'
+import Scheduler from '../components/scheduler/Scheduler'
 
-function IconSearchResults ({ searchResults, isLoading, isError }) {
-  if (isError) { return <Error /> } else if (isLoading) { return <Loading /> } else if (!searchResults) { return <></> }
+import { emptyIcon } from "../EmptyIcon" 
+
+function IconSearchResults({ searchResults, isLoading, isError }) {
+  if (isError)
+    return <Error />
+  else if (isLoading)
+    return <Loading />
+  else if (!searchResults)
+    return <></>
 
   return (
     <Masonry
@@ -34,8 +42,9 @@ const Error = () => {
   return <InfoOutlineIcon id='state-error' />
 }
 
-export default function Home () {
-  const [searchQuery, setsearchQuery] = useState({ value: '', param: 'name' })
+export default function Home() {
+
+  const [searchQuery, setsearchQuery] = useState({ value: 'Holidays', param: 'category' })
   const [colorTemp, setColorTemp] = useState(0)
   const [colorCorrection, setColorCorrection] = useState(0)
   const [brightness, setBrightness] = useState(25)
@@ -60,25 +69,27 @@ export default function Home () {
     }
   }
 
+  console.log(emptyIcon)
+
   return (
-    <div className='container'>
+    <div className="container">
       <Head>
         <title>8x8 Icon Viewer</title>
       </Head>
       {
-        isCategoriesLoading
+        isCategoriesLoading || isLoading
           ? <Loading />
           : isCategoriesError
             ? <Error />
             : <>
-              <Search
+              <Scheduler icons={[emptyIcon, ...icons]}/>
+              {/* <Search
                 searchQuery={searchQuery}
                 categories={categories}
                 onClearSearch={handleClearSearch}
                 onNameSearch={handleNameSearch}
                 onCategorySelection={handleCategorySelection}
-                isLoading={isLoading}
-              >
+                isLoading={isLoading}>
                 <Flex minWidth='80%' alignItems='center' gap={2}>
                   <ClearLEDPanelButton />
                   <TemperatureDropdown colorTemp={colorTemp} setColorTemp={setColorTemp} />
@@ -89,8 +100,7 @@ export default function Home () {
               <IconSearchResults
                 searchResults={icons}
                 isLoading={isLoading}
-                isError={isError}
-              />
+                isError={isError} /> */}
             </>
       }
     </div>
