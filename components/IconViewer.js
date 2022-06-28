@@ -3,37 +3,36 @@ import { Box, Tag, Tooltip } from '@chakra-ui/react'
 
 import { iconviewerURL, sendToIconViewerDevice } from '../config'
 
-function Pixel({ color }) {
-  return (
-    <div className="pixel" style={{ backgroundColor: color }}>
-    </div>
-  )
+function Pixel ({ color }) {
+  return <div className='pixel' style={{ backgroundColor: color }} />
 }
-function Icon({ iconData }) {
+function Icon ({ iconData }) {
   const [frame, setFrame] = useState(0)
 
-  function renderPixel(idx, colorData) {
+  function renderPixel (idx, colorData) {
     const color = colorData.slice(0, 3).map(x => x * 255)
     return <Pixel key={idx} color={`rgb(${color.join(' ')})`} />
   }
 
   if (iconData.delays.length > 0) {
     setTimeout(() => {
-      setFrame(frame === (iconData.delays.length - 1) ? 0 : frame + 1)
+      setFrame(frame === iconData.delays.length - 1 ? 0 : frame + 1)
     }, iconData.delays[frame])
   }
 
-  async function iconClicked() {
+  async function iconClicked () {
     if (!sendToIconViewerDevice) {
       return
     }
 
     if (iconData.icons.length > 1 && iconData.icons.length !== iconData.delays.length) {
-      throw new Error("Icon data is invalid: frame data and frame delay arrays are of different length. Cannot send to device.")
+      throw new Error('Icon data is invalid: frame data and frame delay arrays are of different length. Cannot send to device.')
     }
 
     let bufferIdx = 0
-    let rawIcon = new Uint8Array(1 + 8 * 8 * 3 * iconData.icons.length + 4 * iconData.icons.length)
+    const rawIcon = new Uint8Array(
+      1 + 8 * 8 * 3 * iconData.icons.length + 4 * iconData.icons.length
+    )
     rawIcon[bufferIdx++] = iconData.icons.length
     let iconIdx = 0
     for (const icon of iconData.icons) {
@@ -65,8 +64,12 @@ function Icon({ iconData }) {
     <div onClick={iconClicked}>
       {[...Array(8).keys()].map(row => {
         return (
-          <div key={row} className="pixel-row">
-            {[...Array(8).keys()].map(col => renderPixel(row * 4 + col, iconData.icons[frame][row][col]))}
+          <div key={row} className='pixel-row'>
+            {[...Array(8).keys()].map(col =>
+              iconData.icons[frame]
+                ? renderPixel(row * 4 + col, iconData?.icons[frame][row][col])
+                : setFrame(0)
+            )}
           </div>
         )
       })}
@@ -74,17 +77,39 @@ function Icon({ iconData }) {
   )
 }
 
-export default function IconViewer({ iconData }) {
+function IconInfoBlock ({ iconData }) {
+  return (
+    <div className='icon-info'>
+      <div>
+        {iconData.name
+          ? (
+            <span className='icon-name'>
+              <Tooltip label={iconData.id}>{iconData.name}</Tooltip>
+            </span>
+            )
+          : (
+            <span />
+            )}
+      </div>
+      {iconData.category_name
+        ? (
+          <Tag colorScheme='blue'>{iconData.category_name}</Tag>
+          )
+        : (
+          <span />
+          )}
+    </div>
+  )
+}
+
+export default function IconViewer ({ iconData, displayInfo = true }) {
   return (
     <Box>
-      <div className="icon-viewer">
-        <div className="icon">
-          <Icon iconData={iconData.body} />
-        </div>
-        <div className="icon-info">
-          <div><span className='icon-name'><Tooltip label={iconData.id}>{iconData.name}</Tooltip></span></div>
-          <Tag colorScheme='blue'>{iconData.category_name}</Tag>
-        </div>
+      <div className='icon-viewer'>
+        <Icon iconData={iconData.body} />
+        {displayInfo
+          ? <IconInfoBlock iconData={iconData} />
+          : <></>}
       </div>
     </Box>
   )
