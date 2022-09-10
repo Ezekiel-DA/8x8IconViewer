@@ -1,12 +1,12 @@
-import { Input, InputGroup, InputLeftElement, IconButton } from '@chakra-ui/react'
+import { Input, InputGroup, InputLeftElement, IconButton, Flex } from '@chakra-ui/react'
 import { SmallCloseIcon, SearchIcon } from '@chakra-ui/icons'
 
 
 import Categories from './categories'
 
-export default function Search({ children, categories, isLoading, searchQuery, onClearSearch, onNameSearch, onCategorySelection }) {
+export default function Search({ categories, isLoading, searchQuery, onClearSearch, onNameSearch, onCategorySelection }) {
   return (
-    <div className='header'>
+    <Flex gap={2}>
       <Categories
         values={categories}
         onSelect={onCategorySelection}
@@ -20,7 +20,6 @@ export default function Search({ children, categories, isLoading, searchQuery, o
           />
           <Input
             variant="filled"
-            // isDisabled={isLoading}
             className="searchField"
             value={searchQuery.param === 'name' ? searchQuery.value : ''}
             onChange={evt => onNameSearch(evt.target.value)}
@@ -34,7 +33,6 @@ export default function Search({ children, categories, isLoading, searchQuery, o
           />
         </InputGroup>
       </div>
-      {children}
-    </div>
+    </Flex>
   )
 }

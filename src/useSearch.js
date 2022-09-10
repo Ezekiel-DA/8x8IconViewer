@@ -3,7 +3,9 @@ import axios from 'axios'
 import AwesomeDebouncePromise from 'awesome-debounce-promise'
 
 const iconSearcher = url => axios.post(url).then(res => res.data)
-const categoriesSearcher = url => axios.get(url).then(res => res.data.split(','))
+const categoriesSearcher = url => axios.get(url).then(res => { 
+  return Buffer.from(res.data).toString().split(',')
+} )
 const debouncedIconSearcher = AwesomeDebouncePromise(iconSearcher, 1000)
 
 export function useIconSearch(query) {
@@ -19,9 +21,11 @@ export function useIconSearch(query) {
 
 export function useCategories() {
   const { data, error } = useSWRImmutable(`/api/categories`, categoriesSearcher)
+  console.log('useCategories', data)
+
   return {
-    categories: data,
+    categories: data ? data : [],
     isCategoriesLoading: !error && !data,
-    isCategoriesError: error
+    categoriesError: error
   }
 }
